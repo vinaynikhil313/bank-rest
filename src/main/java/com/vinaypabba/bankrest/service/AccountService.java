@@ -65,17 +65,19 @@ public class AccountService {
         if(null == beneficiaryAccount) {
             throw new BusinessException("Unable to find beneficiary account");
         }
+        beneficiary.setAccount(account);
         Beneficiary b = beneficiaryRepository.save(beneficiary);
         account.addBeneficiary(b);
-        return account;
+        return accountRepository.save(account);
     }
 
     public Account removeBeneficiaryFromAccount(String accountNumber, Long benId) {
         Beneficiary beneficiary = beneficiaryRepository.getOne(benId);
         Account account = getAccountDetails(accountNumber, false);
         account.removeBeneficiary(beneficiary);
+        beneficiary.setAccount(null);
         beneficiaryRepository.delete(beneficiary);
-        return account;
+        return accountRepository.save(account);
     }
 
     public boolean newTransaction(String accountNumber, Transaction transaction, Long benId) {
@@ -87,13 +89,12 @@ public class AccountService {
         if(transaction.getAmount().compareTo(beneficiary.getTransferLimit()) > 0) {
             throw new BusinessException("Transfer limit for this beneficiary exceeded");
         }
-        sourceAccount.getBeneficiaries()
+        boolean beneficiaryNotPresent = sourceAccount.getBeneficiaries()
                 .stream()
-                .filter(ben -> ben.getId().equals(benId))
-                .findAny()
-                .ifPresent(ben -> {
-                    throw new BusinessException("Beneficiary already exists");
-                });
+                .noneMatch(ben -> ben.getId().equals(benId));
+        if(beneficiaryNotPresent) {
+            throw new BusinessException("Beneficiary is not mapped to this Account");
+        }
         Account targetAccount = getAccountDetails(beneficiary.getAccountNumber(), false);
         String transactionId = UUID.randomUUID().toString();
         transaction.setTransactionId(transactionId);
