@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CognitiveScaleRestApplication {
+public class BankRestApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CognitiveScaleRestApplication.class, args);
+        SpringApplication.run(BankRestApplication.class, args);
     }
 }

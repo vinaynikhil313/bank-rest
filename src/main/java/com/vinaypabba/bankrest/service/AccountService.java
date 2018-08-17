@@ -42,11 +42,18 @@ public class AccountService {
 
     public Account addBeneficiaryToAccount(String accountNumber, Beneficiary beneficiary) {
         Account beneficiaryAccount = getAccountDetails(beneficiary.getAccountNumber());
+        Account account = getAccountDetails(accountNumber);
+        account.getBeneficiaries()
+                .stream()
+                .filter(ben -> ben.getAccountNumber().equals(beneficiary.getAccountNumber()))
+                .findAny()
+                .ifPresent(ben -> {
+                    throw new BusinessException("Beneficiary already exists");
+                });
         if(null == beneficiaryAccount) {
             throw new BusinessException("Unable to find beneficiary account");
         }
         Beneficiary b = beneficiaryRepository.save(beneficiary);
-        Account account = getAccountDetails(accountNumber);
         account.addBeneficiary(b);
         return account;
     }
@@ -64,6 +71,13 @@ public class AccountService {
         if(Constants.TXN_TYPE_DEBIT.equals(transaction.getType()) && sourceAccount.getBalance().compareTo(transaction.getAmount()) < 0) {
             throw new BusinessException("Insufficient Funds");
         }
+        sourceAccount.getBeneficiaries()
+                .stream()
+                .filter(ben -> ben.getId().equals(benId))
+                .findAny()
+                .ifPresent(ben -> {
+                    throw new BusinessException("Beneficiary already exists");
+                });
         Account targetAccount = getAccountDetails(beneficiaryRepository.getOne(benId).getAccountNumber());
         String transactionId = UUID.randomUUID().toString();
         transaction.setTransactionId(transactionId);
