@@ -46,6 +46,9 @@ public class UserAuthService implements UserDetailsService {
 
     public boolean registerUser(SignUpRequest signUpRequest) {
         Account account = accountRepository.findAccountByNumber(signUpRequest.getAccountNumber());
+        if(account == null) {
+            throw new BusinessException("Account does not exist");
+        }
         if(account.getUser() != null) {
             throw new BusinessException("Account number already registered");
         }

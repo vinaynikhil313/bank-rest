@@ -2,7 +2,19 @@ spring:
   h2:
     console:
       enabled: true
+      settings:
+        web-allow-others: true
   datasource:
-    url: jdbc:h2:file:E:\cognitiveScale
+    url: jdbc:h2:file:~/bank-rest-api
     username: sa
     password:
+    type: org.apache.tomcat.jdbc.pool.DataSource
+    tomcat:
+      initial-size: 10
+      max-wait: 20000
+      max-active: 20
+      max-idle: 10
+      default-auto-commit: true
+  jpa:
+    hibernate:
+      ddl-auto: create
