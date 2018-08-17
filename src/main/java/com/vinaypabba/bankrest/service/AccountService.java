@@ -11,6 +11,7 @@ import com.vinaypabba.bankrest.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -99,6 +100,7 @@ public class AccountService {
         String transactionId = UUID.randomUUID().toString();
         transaction.setTransactionId(transactionId);
         transaction.setAccount(sourceAccount);
+        transaction.setDate(new Date());
         Transaction sourceTransaction = transactionRepository.save(transaction);
         Transaction targetTransaction = transactionRepository.save(Transaction.createTargetTransaction(sourceTransaction, targetAccount));
         sourceAccount.updateBalance(sourceTransaction.getAmount(), sourceTransaction.getType());
