@@ -11,6 +11,7 @@ public class BankRestApplicationTests {
 
     @Test
     public void contextLoads() {
+        // Testing whether the application load is successful
     }
 
 }

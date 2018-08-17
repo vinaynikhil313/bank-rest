@@ -1,6 +1,7 @@
 package com.vinaypabba.bankrest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.vinaypabba.bankrest.util.BusinessException;
 import com.vinaypabba.bankrest.util.Constants;
 import lombok.*;
 
@@ -16,7 +17,7 @@ import java.util.Date;
 @Entity
 @Table(name = "transactions")
 @JsonIgnoreProperties({"updatedAt", "createdAt", "account"})
-public class Transaction implements Cloneable {
+public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,10 +32,6 @@ public class Transaction implements Cloneable {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    /*@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "beneficiary_id")
-    private Beneficiary beneficiary;*/
-
     private Date createdAt;
     private Date updatedAt;
 
@@ -46,6 +43,9 @@ public class Transaction implements Cloneable {
         target.setCreatedAt(source.getCreatedAt());
         target.setUpdatedAt(source.getUpdatedAt());
         target.setDate(source.getDate());
+        if(!Constants.TXN_TYPE_CREDIT.equals(source.getType()) && !Constants.TXN_TYPE_DEBIT.equals(source.getType())) {
+            throw new BusinessException("Unknown Transaction type provided");
+        }
         target.setType(Constants.TXN_TYPE_CREDIT.equals(source.getType()) ? Constants.TXN_TYPE_DEBIT : Constants.TXN_TYPE_CREDIT);
         return target;
     }

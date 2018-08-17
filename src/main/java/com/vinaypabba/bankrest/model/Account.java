@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = {"beneficiaries", "transactions"})
 @EqualsAndHashCode
 @Entity
 @Table(name = "accounts")
@@ -38,6 +38,11 @@ public class Account {
     @JsonManagedReference
     @JsonIgnore
     private List<Beneficiary> beneficiaries = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(referencedColumnName = "user_id")
+    @JsonIgnore
+    private User user;
 
     private Date createdAt;
     private Date updatedAt;
