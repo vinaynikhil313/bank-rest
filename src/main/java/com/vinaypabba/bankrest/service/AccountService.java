@@ -1,5 +1,6 @@
 package com.vinaypabba.bankrest.service;
 
+import com.vinaypabba.bankrest.kafka.KafkaProducerService;
 import com.vinaypabba.bankrest.model.Account;
 import com.vinaypabba.bankrest.model.Beneficiary;
 import com.vinaypabba.bankrest.model.Transaction;
@@ -8,7 +9,8 @@ import com.vinaypabba.bankrest.repo.BeneficiaryRepository;
 import com.vinaypabba.bankrest.repo.TransactionRepository;
 import com.vinaypabba.bankrest.util.BusinessException;
 import com.vinaypabba.bankrest.util.Constants;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -18,18 +20,14 @@ import java.util.UUID;
 import static java.lang.Math.min;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class AccountService {
 
     private final AccountRepository accountRepository;
     private final BeneficiaryRepository beneficiaryRepository;
     private final TransactionRepository transactionRepository;
-
-    @Autowired
-    public AccountService(AccountRepository accountRepository, BeneficiaryRepository beneficiaryRepository, TransactionRepository transactionRepository) {
-        this.accountRepository = accountRepository;
-        this.beneficiaryRepository = beneficiaryRepository;
-        this.transactionRepository = transactionRepository;
-    }
+    private final KafkaProducerService kafkaProducerService;
 
     public Account getAccountDetails(String accountNumber, boolean txnSummary) {
         Account account = accountRepository.findAccountByNumber(accountNumber);
@@ -109,6 +107,10 @@ public class AccountService {
         targetAccount.addTransaction(targetTransaction);
         accountRepository.save(sourceAccount);
         accountRepository.save(targetAccount);
+        if(kafkaProducerService.pushEventsToKafka(sourceTransaction) ||
+                kafkaProducerService.pushEventsToKafka(targetTransaction)) {
+            log.error("Could not push transaction to Kafka!!!");
+        }
         return true;
     }
 
